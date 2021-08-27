@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width">
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+        <p><button id="btnStart">START RECORDING</button><br/>
+        <button id="btnStop">STOP RECORDING</button></p>
+        
+        <video controls></video>
+        <video id="vid2" controls></video>
+
+    <script>
+        
+        constraintObj = { 
+            audio: false, 
+            video: { 
+                facingMode: "user", 
+                width: { min: 640, ideal: 800, max: 980 }
+            } 
+        };
+
+        navigator.mediaDevices.getUserMedia(constraintObj)
+        .then(function(mediaStreamObj) {
+            //connect the media stream to the first video element
+            video = document.querySelector('video');
+            if ("srcObject" in video) {
+                video.srcObject = mediaStreamObj;
+            } 
+            
+            video.onloadedmetadata = function(ev) {
+                //show in the video element what is being captured by the webcam
+                //add listeners for saving video/audio
+                start = document.getElementById('btnStart');
+                stop = document.getElementById('btnStop');
+                vidSave = document.getElementById('vid2');
+                mediaRecorder = new MediaRecorder(mediaStreamObj);
+                chunks = [];
+                video.play();
+                start.addEventListener('click', (ev)=>{
+                    mediaRecorder.start();
+                    console.log(mediaRecorder.state);
+                })
+                stop.addEventListener('click', (ev)=>{
+                    mediaRecorder.stop();
+                    console.log(mediaRecorder.state);
+                });
+                mediaRecorder.ondataavailable = function(ev) {
+                    chunks.push(ev.data);
+                }
+                mediaRecorder.onstop = (ev)=>{
+                    blob = new Blob(chunks, { 'type' : 'video/mp4;' });
+                    chunks = [];
+                    videoURL = window.URL.createObjectURL(blob);
+                    vidSave.src = videoURL;
+                }
+
+
+                };
+         
+        })
+       
+    </script>
+</body>
+</html>
